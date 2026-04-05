@@ -1,0 +1,198 @@
+{
+  "generated_at": "2026-04-05T08:47:20.577818",
+  "strategy_version": "d495d5b9:00000000",
+  "blended_versions": null,
+  "sample_size": 6703,
+  "graded_sample_size": 4800,
+  "efficacy_sample_size": 1903,
+  "fn_sample_size": 0,
+  "confidence": "high",
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "base_score_threshold": {
+      "current": 12.0,
+      "suggested": 14.0,
+      "delta": 2.0,
+      "direction": "raise",
+      "reason": "Score bucket 10-12 has 26% win rate at recommended exit (n=34) \u2014 unprofitable when held to the advised exit, not just within 5 days.",
+      "priority": "HIGH",
+      "sample_size": 34,
+      "source": "graded"
+    },
+    "max_iv": {
+      "current": 0.75,
+      "suggested": 0.65,
+      "delta": -0.1,
+      "direction": "lower",
+      "reason": "High-IV options (IV\u22650.70) have 1% win rate (n=466) vs 9% for IV 0.30-0.70. IV crush likely hurting returns after entry.",
+      "priority": "HIGH",
+      "sample_size": 466
+    },
+    "delta_range": {
+      "current_min": 0.4,
+      "current_max": 0.65,
+      "suggested_min": 0.4,
+      "suggested_max": 0.65,
+      "delta_min": 0.0,
+      "delta_max": 0.0,
+      "direction": "informational",
+      "reason": "Delta bucket <0.25 has worst win rate (0%, n=444). Review delta_good_min / delta_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 4800,
+      "bucket_summary": {
+        "<0.25": {
+          "n": 444,
+          "win_rate": 0.0
+        },
+        "0.25-0.35": {
+          "n": 269,
+          "win_rate": 0.015
+        },
+        "0.35-0.45": {
+          "n": 340,
+          "win_rate": 0.035
+        },
+        "0.45-0.55": {
+          "n": 513,
+          "win_rate": 0.051
+        },
+        "0.55-0.65": {
+          "n": 710,
+          "win_rate": 0.087
+        },
+        "0.65-0.75": {
+          "n": 1011,
+          "win_rate": 0.125
+        },
+        ">0.75": {
+          "n": 1513,
+          "win_rate": 0.102
+        }
+      }
+    },
+    "expiry_window": {
+      "current_good_min": 7.0,
+      "current_good_max": 45.0,
+      "direction": "informational",
+      "reason": "DTE range 3-7d has the lowest win rate (0%). Review expiry_good_min / expiry_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 4800,
+      "bucket_summary": {
+        "3-7d": {
+          "n": 14,
+          "win_rate": 0.0
+        },
+        "7-14d": {
+          "n": 65,
+          "win_rate": 0.031
+        },
+        "14-21d": {
+          "n": 78,
+          "win_rate": 0.051
+        },
+        "21-30d": {
+          "n": 232,
+          "win_rate": 0.078
+        },
+        "30-45d": {
+          "n": 68,
+          "win_rate": 0.029
+        },
+        ">45d": {
+          "n": 4343,
+          "win_rate": 0.082
+        }
+      }
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {
+    "liquidity": {
+      "config_key": "fw_liquidity",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": -1.547,
+      "avg_loss_contribution": -2.289,
+      "sample_size": 1903,
+      "source": "efficacy",
+      "reason": "Liquidity contributes avg -1.55 on profitable trades vs -2.29 on losses (diff=0.74, source=efficacy) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15.",
+      "priority": "LOW",
+      "discrepancy_note": "Efficacy (5-day) suggests 'raise' but actual hold outcomes suggest 'lower'. This typically means the factor is predictive short-term but the hold window is misaligned \u2014 check hold_adjustment before changing this factor weight."
+    },
+    "expiry": {
+      "config_key": "fw_expiry",
+      "current": 1.0,
+      "suggested": 0.9,
+      "delta": -0.1,
+      "direction": "lower",
+      "avg_win_contribution": -2.273,
+      "avg_loss_contribution": -2.412,
+      "sample_size": 1903,
+      "source": "efficacy",
+      "reason": "Expiry contributes avg -2.27 on profitable trades vs -2.41 on losses (diff=0.14, source=efficacy) \u2014 weak predictor. Lowering weight 1.0 \u2192 0.9 to reduce noise. Corroborated by actual hold outcomes (n=4692).",
+      "priority": "HIGH",
+      "corroborated_by_graded": true,
+      "graded_sample_size": 4692
+    },
+    "strike": {
+      "config_key": "fw_strike",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": 1.854,
+      "avg_loss_contribution": 1.163,
+      "sample_size": 4692,
+      "source": "graded",
+      "reason": "Strike contributes avg 1.85 on profitable trades vs 1.16 on losses (diff=0.69, source=graded) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15. (graded outcomes only \u2014 insufficient efficacy data)",
+      "priority": "MEDIUM"
+    },
+    "iv": {
+      "config_key": "fw_iv",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": 0.414,
+      "avg_loss_contribution": -0.764,
+      "sample_size": 1903,
+      "source": "efficacy",
+      "reason": "Iv contributes avg 0.41 on profitable trades vs -0.76 on losses (diff=1.18, source=efficacy) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15. Corroborated by actual hold outcomes (n=4692).",
+      "priority": "HIGH",
+      "corroborated_by_graded": true,
+      "graded_sample_size": 4692
+    },
+    "volatility": {
+      "config_key": "fw_volatility",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": 0.429,
+      "avg_loss_contribution": -0.2,
+      "sample_size": 4692,
+      "source": "graded",
+      "reason": "Volatility contributes avg 0.43 on profitable trades vs -0.20 on losses (diff=0.63, source=graded) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15. (graded outcomes only \u2014 insufficient efficacy data)",
+      "priority": "MEDIUM"
+    },
+    "technicals": {
+      "config_key": "fw_technicals",
+      "current": 1.0,
+      "suggested": 1.13,
+      "delta": 0.13,
+      "direction": "raise",
+      "avg_win_contribution": -1.445,
+      "avg_loss_contribution": -1.973,
+      "sample_size": 4692,
+      "source": "graded",
+      "reason": "Technicals contributes avg -1.44 on profitable trades vs -1.97 on losses (diff=0.53, source=graded) \u2014 strong predictor. Raising weight 1.0 \u2192 1.13. (graded outcomes only \u2014 insufficient efficacy data)",
+      "priority": "MEDIUM"
+    }
+  },
+  "notes": [
+    "Score threshold from graded outcomes only (insufficient efficacy data).",
+    "Factor weight analysis found 6 factor(s) with suggested weight changes."
+  ]
+}
