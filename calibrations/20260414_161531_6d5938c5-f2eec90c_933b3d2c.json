@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-04-14T16:15:31.639110",
+  "strategy_version": "6d5938c5:f2eec90c",
+  "blended_versions": null,
+  "sample_size": 61,
+  "graded_sample_size": 0,
+  "efficacy_sample_size": 61,
+  "fn_sample_size": 2015,
+  "confidence": "medium",
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "max_spread_pct": {
+      "current": 0.08,
+      "suggested": 0.1,
+      "delta": 0.02,
+      "direction": "raise",
+      "reason": "Spread hard filter has 42% false-negative rate (5/12 rejected options were profitable). Slightly relaxing max_spread_pct may capture these.",
+      "priority": "MEDIUM",
+      "sample_size": 12
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {
+    "liquidity": {
+      "config_key": "fw_liquidity",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": 2.088,
+      "avg_loss_contribution": 0.0,
+      "sample_size": 61,
+      "source": "efficacy",
+      "reason": "Liquidity contributes avg 2.09 on profitable trades vs 0.00 on losses (diff=2.09, source=efficacy) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15. (efficacy only \u2014 insufficient graded data)",
+      "priority": "HIGH"
+    },
+    "expiry": {
+      "config_key": "fw_expiry",
+      "current": 1.0,
+      "suggested": 0.9,
+      "delta": -0.1,
+      "direction": "lower",
+      "avg_win_contribution": -0.9,
+      "avg_loss_contribution": -0.9,
+      "sample_size": 61,
+      "source": "efficacy",
+      "reason": "Expiry contributes avg -0.90 on profitable trades vs -0.90 on losses (diff=0.00, source=efficacy) \u2014 weak predictor. Lowering weight 1.0 \u2192 0.9 to reduce noise. (efficacy only \u2014 insufficient graded data)",
+      "priority": "MEDIUM"
+    },
+    "volatility": {
+      "config_key": "fw_volatility",
+      "current": 1.0,
+      "suggested": 0.9,
+      "delta": -0.1,
+      "direction": "lower",
+      "avg_win_contribution": 1.725,
+      "avg_loss_contribution": 1.725,
+      "sample_size": 61,
+      "source": "efficacy",
+      "reason": "Volatility contributes avg 1.72 on profitable trades vs 1.73 on losses (diff=-0.00, source=efficacy) \u2014 weak predictor. Lowering weight 1.0 \u2192 0.9 to reduce noise. (efficacy only \u2014 insufficient graded data)",
+      "priority": "MEDIUM"
+    },
+    "technicals": {
+      "config_key": "fw_technicals",
+      "current": 1.0,
+      "suggested": 1.15,
+      "delta": 0.15,
+      "direction": "raise",
+      "avg_win_contribution": -1.933,
+      "avg_loss_contribution": -2.825,
+      "sample_size": 61,
+      "source": "efficacy",
+      "reason": "Technicals contributes avg -1.93 on profitable trades vs -2.83 on losses (diff=0.89, source=efficacy) \u2014 strong predictor. Raising weight 1.0 \u2192 1.15. (efficacy only \u2014 insufficient graded data)",
+      "priority": "MEDIUM"
+    }
+  },
+  "notes": [
+    "Factor weight analysis found 4 factor(s) with suggested weight changes."
+  ]
+}
