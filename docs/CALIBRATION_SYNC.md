@@ -6,12 +6,23 @@ This document is the single source of truth for how calibrations flow from the a
 
 ## Overview
 
-Calibrations are data-driven adjustments to the option scanner's scoring config (`scanner_config.json`). They are produced by the analysis pipeline, versioned in this repo, sent to the Pi via HTTP, and applied to the live scanner. The system is designed so that:
+Calibrations are data-driven adjustments to the option scanner's scoring config (`scanner_config.json`). They are produced by the analysis pipeline or authored by hand, versioned in this repo, sent to the Pi via HTTP, and applied to the live scanner. The system is designed so that:
 
 - A pipeline run **never auto-stages or auto-sends** a calibration — every send requires explicit user action.
 - Calibrations are **idempotent**: applying the same file twice produces the same config state.
-- The Pi is the **source of truth** for what has been applied; the analysis machine maintains a local send log as a fallback.
-- **Version filtering** ensures calibrations generated against an old strategy version are never sent after a strategy change.
+- The Pi is the **source of truth** for what has been applied; the local send log is an audit trail only, not a status fallback.
+- **Version filtering** ensures calculated calibrations generated against an old strategy version are never sent after a strategy change. Coded calibrations bypass this filter entirely.
+
+---
+
+## Two Calibration Types
+
+| Type | `source` field | Produced by | Version filter |
+|---|---|---|---|
+| **Calculated** | `"generated"` | `--mode pipeline` / `--mode calibrate` | Must match current strategy version |
+| **Coded** | `"coded"` | Manually authored and committed to this repo | Bypassed — always shown as pending until applied |
+
+**Coded calibrations** encode expert knowledge: baseline values, emergency corrections, bootstrap configs. They are authored directly as JSON files in `calibrations/` with `"source": "coded"` and a `"strategy_version"` for documentation purposes only (not enforced). The `send-outstanding` flow sends them alongside calculated calibrations.
 
 ---
 
@@ -20,7 +31,7 @@ Calibrations are data-driven adjustments to the option scanner's scoring config 
 | Repo / Service | Machine | Purpose |
 |---|---|---|
 | `option-analysis` | Analysis machine | Generates calibrations, stages them, sends to Pi |
-| `options-calibrations` (this repo) | Both (cloned) | Immutable archive of every calibration ever generated |
+| `options-calibrations` (this repo) | Both (cloned) | Immutable archive of every calibration ever generated or coded |
 | `option-getter` | Pi (Raspberry Pi) | Receives and applies calibrations; owns the applied history DB |
 
 Both machines must have `options-calibrations` cloned **as a sibling** to `option-analysis` / `option-getter`:
@@ -46,7 +57,7 @@ Files in `calibrations/` follow the naming convention:
 
 Example: `20260414_161600_6d5938c5-f2eec90c_154ce65f.json`
 
-- **`strategy_version`** — `{factors_hash[:8]}:{config_hash[:8]}`, auto-computed from MD5 of all scanner factor files + `scanner_config.json`. Colons are replaced with hyphens in filenames.
+- **`strategy_version`** — `{factors_hash[:8]}:{config_hash[:8]}`, auto-computed from MD5 of all scanner factor files + `scanner_config.json`. Colons are replaced with hyphens in filenames. For coded calibrations this is informational (e.g. `"bootstrap:00000000"` or the version at time of authoring).
 - **`calibration_id`** — first 8 chars of SHA256 of the sorted JSON content. Used for deduplication everywhere.
 
 Key fields inside each file:
@@ -57,6 +68,7 @@ Key fields inside each file:
   "strategy_version":  "6d5938c5:f2eec90c",
   "sample_size":       61,
   "confidence":        "medium",
+  "source":            "generated",
   "adjustments": {
     "max_spread_pct": {
       "current": 0.08, "suggested": 0.10, "delta": 0.02,
@@ -70,12 +82,14 @@ Key fields inside each file:
     }
   },
   "hold_adjustment": null,
-  "source": "generated",
   "staged_from_file": "20260414_161600_..."
 }
 ```
 
-`"source"` is `"generated"` (from `--mode pipeline` / `calibrate`) or `"manual"` (staged from archive picker or `--file`).
+**Valid `source` values:**
+- `"generated"` — produced by `--mode pipeline` / `--mode calibrate`
+- `"manual"` — staged from the archive picker (`--mode stage-calibration` interactive)
+- `"coded"` — manually authored JSON committed directly to this repo; bypasses version filtering in all send/list operations
 
 ---
 
@@ -115,15 +129,36 @@ A pipeline run **cannot clobber** a manually staged calibration because it only 
    → Pi records to database/calibrations.db
    → Pi applies (if auto_apply=true) or queues
    → Response includes current_config; analysis machine saves to cache/pi_scanner_config.json
-   → Analysis machine appends to cache/calibration_send_log.jsonl
+   → Analysis machine appends to cache/calibration_send_log.jsonl (audit record)
    → calibration.json renamed to calibration_sent_{ts}_{id}.json (cleared from staged slot)
+```
+
+### Authoring a coded calibration
+
+```
+1. Create a JSON file in calibrations/ with the standard format plus "source": "coded"
+   Use filename: {YYYYMMDD}_{HHMMSS}_coded_{calibration_id}.json
+   Set strategy_version to "coded" or the version you're targeting (informational only)
+
+2. Commit to this repo:
+   git add calibrations/<file>
+   git commit -m "Add coded calibration: <description>"
+   git push
+   OR: iOS app → "Commit to Repo"
+
+3. On both machines, pull the repo:
+   cd options-calibrations && git pull
+
+4. Send via send-outstanding (coded calibrations always appear regardless of version):
+   python main.py --mode send-outstanding
+   OR: iOS app → Pending Calibrations → "Send All to Pi"
 ```
 
 ### Sending multiple outstanding calibrations
 
 ```
 python main.py --mode list-archive          # see what's pending
-python main.py --mode send-outstanding      # send all pending (current version)
+python main.py --mode send-outstanding      # send all pending (calculated current version + all coded)
 OR: iOS app → Scoring Analysis → Pending Calibrations → "Send All to Pi"
 → POST /calibration/send-outstanding on option-analysis server
 → Sends each pending file oldest-first via POST /calibration/upload
@@ -169,22 +204,27 @@ CREATE UNIQUE INDEX idx_cal_id ON calibration_history(calibration_id);
 
 The `UNIQUE INDEX` on `calibration_id` means re-sending the same calibration is a no-op — `INSERT OR IGNORE` is used on every write, so double-applies are always safe.
 
+**The Pi is the source of truth.** `list-archive`, `send-outstanding`, and `GET /calibration/pending-archive` all query the Pi's `GET /calibration/applied-ids` endpoint to determine status. If the Pi is unreachable, these operations show `[?]` (CLI) or return `{"pi_reachable": false}` (HTTP) — they do not fall back to the local `calibration_send_log.jsonl`. The send log exists as an audit record only.
+
 **Migration**: On first startup after the upgrade, any existing `cache/calibration_history.jsonl` records are auto-imported into the DB and the JSONL file is renamed to `calibration_history.jsonl.migrated` (kept as backup, not deleted).
 
 ---
 
 ## Version Filtering
 
-Every calibration file carries a `strategy_version` string. The analysis tools compute the **current version** by reading the `strategy_version` from the most recently dated file in `calibrations/`.
+Every calibration file carries a `strategy_version` string.
 
 | Status | Condition |
 |---|---|
-| `[applied]` | `calibration_id` is in Pi's `calibration_history` table |
-| `[sent]` | In local `calibration_send_log.jsonl`; Pi hasn't confirmed (Pi may be queued or unreachable at check time) |
-| `[pending]` | Not sent, `strategy_version` matches current archive version |
-| `[old-version]` | Not sent, `strategy_version` is older than the current archive version |
+| `[applied {date}]` | `calibration_id` is in Pi's `calibration_history` table |
+| `[pending]` | Not applied, `strategy_version` matches current archive version |
+| `[coded-pending]` | `source == "coded"`, not applied — version filter bypassed |
+| `[old-version]` | Not applied, `strategy_version` is older than the current archive version |
+| `[?]` | Pi unreachable — status unknown |
 
-`send-outstanding` and `GET /calibration/pending-archive` only surface `[pending]` entries — `[old-version]` entries are skipped entirely so a strategy version change doesn't cause stale calibrations to be sent.
+`send-outstanding` and `GET /calibration/pending-archive` surface `[pending]` and `[coded-pending]` entries. `[old-version]` entries are skipped for calculated calibrations. `[coded-pending]` entries are always included regardless of version.
+
+**Current version** is determined by reading the `strategy_version` from the most recently dated non-coded file in `calibrations/`.
 
 ---
 
@@ -198,20 +238,20 @@ Every calibration file carries a `strategy_version` string. The analysis tools c
 | `DELETE` | `/calibration` | API key | Delete staged calibration |
 | `POST` | `/calibration/send` | API key | Push staged `calibration.json` to Pi |
 | `POST` | `/calibration/commit-archive` | API key | `git add/commit/push` new files in this repo |
-| `GET` | `/calibration/pending-archive` | API key | List archive entries not yet applied to Pi; queries Pi's `/calibration/applied-ids` |
-| `POST` | `/calibration/send-outstanding` | API key | Send all pending archive entries to Pi (oldest-first); stops on first failure |
+| `GET` | `/calibration/pending-archive` | API key | List archive entries not yet applied to Pi; queries Pi's `/calibration/applied-ids`. Returns `{"pi_reachable": false}` with empty list if Pi is unreachable. |
+| `POST` | `/calibration/send-outstanding` | API key | Send all pending archive entries to Pi oldest-first; returns 503 if Pi is unreachable |
 
 Key behaviors of `POST /calibration/send`:
 - Reuses `cache/pi_scanner_config.json` if it was written within the last 5 minutes (pipeline just synced it), to avoid a redundant Pi network call.
 - Returns 422 if Pi's config already matches all suggested values ("already applied" guard).
 - Archives `calibration.json` to `calibration_sent_{ts}_{id}.json` on success (clears staged slot).
-- Records to `cache/calibration_send_log.jsonl` on success.
+- Records to `cache/calibration_send_log.jsonl` on success (audit record).
 
 ### option-getter (port 8001) — Pi
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| `POST` | `/calibration/upload` | Bearer `CALIBRATION_TOKEN` | Receive a calibration; save to inbox; optionally auto-apply; record to `calibrations.db` |
+| `POST` | `/calibration/upload` | Bearer `CALIBRATION_TOKEN` | Receive a calibration; save to inbox; optionally auto-apply; record to `calibrations.db`. Returns **409** if already applied or already in queue (queue mode). |
 | `GET` | `/calibration/status` | Bearer `CALIBRATION_TOKEN` | Return pending calibration summary + last applied record |
 | `GET` | `/calibration/applied-ids` | Bearer `CALIBRATION_TOKEN` | Return all applied calibration IDs with strategy version and timestamp |
 | `GET` | `/calibration/current-config` | Bearer `CALIBRATION_TOKEN` | Return current `scanner_config.json` (used as calibration baseline) |
@@ -233,7 +273,7 @@ Key behaviors of `POST /calibration/send`:
 }
 ```
 
-This is the authoritative source for "what has the Pi actually applied." The analysis machine queries it in `list-archive`, `send-outstanding`, and `GET /calibration/pending-archive`.
+This is the authoritative source for "what has the Pi actually applied." All status checks query it directly.
 
 ---
 
@@ -243,7 +283,7 @@ This is the authoritative source for "what has the Pi actually applied." The ana
 |---|---|---|
 | `cache/calibration_generated.json` | `--mode pipeline` / `--mode calibrate` | Pipeline output; never auto-staged |
 | `cache/calibration.json` | `--mode stage-calibration` | Staged-for-send slot; read by `send-calibration` |
-| `cache/calibration_send_log.jsonl` | `send-calibration` / `send-outstanding` | Local record of successful sends; fallback when Pi is unreachable |
+| `cache/calibration_send_log.jsonl` | `send-calibration` / `send-outstanding` | **Audit record only** — not used to determine Pi status |
 | `cache/pi_scanner_config.json` | Pipeline + send response | Cached copy of Pi's config; used as calibration baseline and send guard |
 | `cache/analysis_config.json` | `--mode configure` | Stores `option_getter_api_url` and `option_getter_api_token` |
 
@@ -282,26 +322,28 @@ python main.py --mode apply-calibration --yes
 
 ### 3. Was the calibration sent at all?
 
-On the analysis machine:
+Check the Pi's applied-ids endpoint directly — the send log is an audit record, not a status source:
 
 ```bash
-cat cache/calibration_send_log.jsonl | python3 -m json.tool | grep calibration_id
+curl -H "Authorization: Bearer <token>" http://<pi>:8001/calibration/applied-ids
 ```
 
-If the ID is absent from the send log → the send never completed. Check:
+If the calibration_id is absent from the Pi's applied history → the send never completed or the Pi hasn't applied it yet. Check:
 - Was `cache/calibration.json` (staged slot) populated before the send? If not, run `--mode stage-calibration --generated` first.
 - Did `--mode send-calibration` return an error? Re-run it and read the output.
 - Is the Pi reachable? `curl -H "Authorization: Bearer <token>" http://<pi>:8001/health`
 
-### 4. Is the calibration pending with the wrong strategy version?
+### 4. Is the calibration showing [old-version] in list-archive?
 
 ```bash
 python main.py --mode list-archive
 ```
 
-If the calibration shows `[old-version]`, it was generated against an older strategy version. The current scanner has different factor/config hashes. Options:
+If a calculated calibration shows `[old-version]`, it was generated against an older strategy version. Options:
 - If the old calibration is still relevant, manually stage and send it: `--mode stage-calibration --file <path>` → `--mode send-calibration`.
 - If the strategy changed intentionally, run a fresh pipeline to generate a calibration for the new version.
+
+Note: coded calibrations (`source: "coded"`) always show as `[coded-pending]` regardless of strategy version — they are not subject to version filtering.
 
 ### 5. Did the send guard block the send (422 "already applied")?
 
@@ -321,6 +363,11 @@ cat cache/analysis_config.json
 
 If the URL is wrong, run `python main.py --mode configure` to update it. Ensure the Pi is on the VPN (Tailscale) if connecting remotely.
 
+When the Pi is unreachable:
+- `list-archive` shows `[?]` for all unapplied entries
+- `send-outstanding` aborts immediately (does not fall back to send log)
+- `GET /calibration/pending-archive` returns `{"pi_reachable": false}` with an empty list
+
 ---
 
 ## Auto-Apply Setting
@@ -329,8 +376,8 @@ The Pi's `calibration_auto_apply` flag in `scanner_config.json` (editable via `-
 
 | Setting | Behavior |
 |---|---|
-| `false` (default) | Calibration saved to `cache/calibration_inbox/`; nothing applied until `apply-calibration` is run manually |
-| `true` | HIGH priority changes applied immediately on receipt; MEDIUM/LOW queued for manual review |
+| `true` (default) | All changes applied immediately on receipt (not added to queue) |
+| `false` | Calibration saved to queue; nothing applied until `apply-calibration` is run manually |
 
 The iOS app's Pi Calibration Status section reflects which mode is active and shows pending queue items.
 
@@ -342,8 +389,9 @@ Deduplication happens at multiple layers:
 
 1. **`calibration_id`** — computed as `SHA256(sorted JSON content)[:8]`. Same content = same ID everywhere.
 2. **Pi DB** — `INSERT OR IGNORE` on `calibration_id` unique index. A re-sent file is silently ignored.
-3. **Send guard** — `POST /calibration/send` checks Pi's live config before sending; returns 422 if all suggested values already match.
-4. **`send-outstanding`** — filters by `calibration_id not in applied_ids` before building the send list.
+3. **Queue-mode dedup** — `POST /calibration/upload` returns **409** if the calibration is already applied or already in the queue (queue mode only; auto-apply mode is always safe because the DB dedup handles it).
+4. **Send guard** — `POST /calibration/send` checks Pi's live config before sending; returns 422 if all suggested values already match.
+5. **`send-outstanding`** — filters by `calibration_id not in applied_ids` before building the send list.
 
 So it is always safe to re-run `--mode send-outstanding` or retry `--mode send-calibration`. The worst case is a 409 (duplicate) or 422 (already applied) response from the Pi.
 
