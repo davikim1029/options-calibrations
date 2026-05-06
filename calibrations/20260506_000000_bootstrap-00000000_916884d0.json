@@ -1,0 +1,111 @@
+{
+  "generated_at": "2026-05-06T00:00:00.000000",
+  "strategy_version": "bootstrap:00000000",
+  "blended_versions": null,
+  "sample_size": 0,
+  "graded_sample_size": 0,
+  "efficacy_sample_size": 0,
+  "fn_sample_size": 0,
+  "confidence": "high",
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "calibration_id": "916884d0",
+  "adjustments": {
+    "max_iv": {
+      "current": 0.75,
+      "suggested": 0.65,
+      "delta": -0.1,
+      "direction": "lower",
+      "reason": "Bootstrap: calibrated operational value derived from historical outcome analysis.",
+      "priority": "HIGH",
+      "sample_size": 0
+    },
+    "max_spread_pct": {
+      "current": 0.08,
+      "suggested": 0.1,
+      "delta": 0.02,
+      "direction": "raise",
+      "reason": "Bootstrap: calibrated operational value derived from historical outcome analysis.",
+      "priority": "HIGH",
+      "sample_size": 0
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {
+    "liquidity": {
+      "config_key": "fw_liquidity",
+      "current": 1.0,
+      "suggested": 2.0,
+      "delta": 1.0,
+      "direction": "raise",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "expiry": {
+      "config_key": "fw_expiry",
+      "current": 1.0,
+      "suggested": 0.7,
+      "delta": -0.3,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "strike": {
+      "config_key": "fw_strike",
+      "current": 1.0,
+      "suggested": 0.75,
+      "delta": -0.25,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "iv": {
+      "config_key": "fw_iv",
+      "current": 1.0,
+      "suggested": 0.75,
+      "delta": -0.25,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "volatility": {
+      "config_key": "fw_volatility",
+      "current": 1.0,
+      "suggested": 0.75,
+      "delta": -0.25,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "greeks": {
+      "config_key": "fw_greeks",
+      "current": 1.0,
+      "suggested": 0.25,
+      "delta": -0.75,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "technicals": {
+      "config_key": "fw_technicals",
+      "current": 1.0,
+      "suggested": 2.0,
+      "delta": 1.0,
+      "direction": "raise",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    },
+    "sentiment": {
+      "config_key": "fw_sentiment",
+      "current": 1.0,
+      "suggested": 0.75,
+      "delta": -0.25,
+      "direction": "lower",
+      "priority": "HIGH",
+      "reason": "Bootstrap: calibrated operational value."
+    }
+  },
+  "notes": [
+    "Bootstrap calibration — sets all factor weights and thresholds to the calibrated operational baseline.",
+    "Apply on fresh deployments via: python main.py --mode apply-latest-calibration"
+  ]
+}
