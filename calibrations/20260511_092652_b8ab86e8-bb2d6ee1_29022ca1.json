@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-05-11T14:23:35.237768",
+  "strategy_version": "b8ab86e8:bb2d6ee1",
+  "blended_versions": null,
+  "sample_size": 786793,
+  "graded_sample_size": 560118,
+  "efficacy_sample_size": 105975,
+  "confidence": "high",
+  "avg_score_confidence": null,
+  "scanner_config_path": "../option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "max_iv": {
+      "current": 0.3,
+      "suggested": 0.65,
+      "delta": 0.35,
+      "direction": "raise",
+      "reason": "max_iv=0.30 produced zero buy signals across 3 days and 3361 evaluations since May 8. All previous working configs used 0.65. Historical passes had avg_iv 0.43-0.49. The scanner default ceiling is 0.75. Restoring to 0.65 is the conservative midpoint with documented profitable history.",
+      "priority": "HIGH",
+      "sample_size": 70
+    },
+    "base_score_threshold": {
+      "current": 6.0,
+      "suggested": 8.0,
+      "delta": 2.0,
+      "direction": "raise",
+      "reason": "Graded outcomes show 8% win rate at actual hold exits for score bucket 12-14. Efficacy (5-day peak) favors lowering, but graded outcomes are the reliable signal for actual P&L. The effective threshold for most options is 12.0 via iv_rank_gate_score_floor; base_score_threshold only governs low-IV-rank options. Raising from 6.0 to 8.0 tightens this gate without affecting the dominant iv_rank_gate path.",
+      "priority": "MEDIUM",
+      "sample_size": 77
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {},
+  "vix_regime_thresholds": null,
+  "notes": [
+    "max_iv is the primary blocker: zero signals in 3 days at 0.30. All historical passes had avg_iv 0.43-0.49. Raising to 0.65 restores the productive option universe.",
+    "base_score_threshold raise from 6.0 to 8.0 is conservative \u2014 iv_rank_gate_score_floor=12.0 is the real filter for most options. This only tightens the low-IV-rank path.",
+    "DTE informational: 14-21d options have highest win rate (7.2%); 21-30d drops to 1.7%. Consider tightening expiry_good_max from 45 to 21 in a future calibration once more data is available.",
+    "Sentiment and market_structure factors scored 0.0 on all recent passes \u2014 verify news-getter feed health."
+  ],
+  "staged_from_file": "calibration_generated.json"
+}

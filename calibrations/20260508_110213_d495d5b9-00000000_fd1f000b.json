@@ -1,0 +1,152 @@
+{
+  "status": "has_changes",
+  "baseline_source": "live",
+  "pi_config_synced_at": "2026-05-08T07:50:17.912927",
+  "generated_at": "2026-05-08T07:50:25.793578",
+  "strategy_version": "d495d5b9:00000000",
+  "blended_versions": null,
+  "sample_size": 105975,
+  "graded_sample_size": 53008,
+  "efficacy_sample_size": 52967,
+  "fn_sample_size": 513311,
+  "confidence": "high",
+  "avg_score_confidence": null,
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "base_score_threshold": {
+      "current": 8.0,
+      "suggested": 6.0,
+      "delta": -2.0,
+      "direction": "lower",
+      "reason": "Score bucket 4-6 (below current threshold of 8.0) has 73% win rate, avg return 12.2% (n=1111). Lowering threshold would capture these profitable near-misses.",
+      "priority": "LOW",
+      "sample_size": 1111,
+      "discrepancy_note": "base_score_threshold uses score_efficacy \u2014 whether options hit a profitable price within 5 days of being scored (short-term movement). base_score_threshold_graded uses signal_grades \u2014 whether options were profitable at the actual hold exit (AI-recommended hold period). When they conflict it typically means options are peaking before the recommended exit: efficacy sees the early gain, graded sees the fade. This is not a code or logic error \u2014 it is an economic signal that hold timing may be misaligned with price behaviour. Both signals are shown as LOW-priority so you can choose a path: lower the threshold (capture short-term movers) or raise it (filter for options that hold value through the recommended exit). Review hold_adjustment before acting on either threshold signal.",
+      "corroborated_by_fn": true
+    },
+    "base_score_threshold_graded": {
+      "current": 8.0,
+      "suggested": 10.0,
+      "delta": 2.0,
+      "direction": "raise",
+      "reason": "Score bucket 12-14 has 8% win rate, avg return -44.4% at recommended exit (n=77, 90% CI [4%, 14%]) \u2014 negative expected value when held to the advised exit.",
+      "priority": "LOW",
+      "sample_size": 77,
+      "source": "graded",
+      "ci_lower": 0.041,
+      "ci_upper": 0.144,
+      "discrepancy_note": "base_score_threshold uses score_efficacy \u2014 whether options hit a profitable price within 5 days of being scored (short-term movement). base_score_threshold_graded uses signal_grades \u2014 whether options were profitable at the actual hold exit (AI-recommended hold period). When they conflict it typically means options are peaking before the recommended exit: efficacy sees the early gain, graded sees the fade. This is not a code or logic error \u2014 it is an economic signal that hold timing may be misaligned with price behaviour. Both signals are shown as LOW-priority so you can choose a path: lower the threshold (capture short-term movers) or raise it (filter for options that hold value through the recommended exit). Review hold_adjustment before acting on either threshold signal."
+    },
+    "delta_range": {
+      "current_min": 0.4,
+      "current_max": 0.65,
+      "suggested_min": 0.4,
+      "suggested_max": 0.65,
+      "delta_min": 0.0,
+      "delta_max": 0.0,
+      "direction": "informational",
+      "reason": "Delta bucket 0.25-0.35 has worst win rate (1%, n=3439). Review delta_good_min / delta_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 53008,
+      "bucket_summary": {
+        "<0.25": {
+          "n": 6953,
+          "win_rate": 0.028,
+          "ci_lower": 0.025,
+          "ci_upper": 0.031
+        },
+        "0.25-0.35": {
+          "n": 3439,
+          "win_rate": 0.01,
+          "ci_lower": 0.007,
+          "ci_upper": 0.013
+        },
+        "0.35-0.45": {
+          "n": 3776,
+          "win_rate": 0.019,
+          "ci_lower": 0.015,
+          "ci_upper": 0.023
+        },
+        "0.45-0.55": {
+          "n": 5210,
+          "win_rate": 0.023,
+          "ci_lower": 0.02,
+          "ci_upper": 0.027
+        },
+        "0.55-0.65": {
+          "n": 7096,
+          "win_rate": 0.024,
+          "ci_lower": 0.021,
+          "ci_upper": 0.027
+        },
+        "0.65-0.75": {
+          "n": 9865,
+          "win_rate": 0.023,
+          "ci_lower": 0.02,
+          "ci_upper": 0.025
+        },
+        ">0.75": {
+          "n": 16669,
+          "win_rate": 0.022,
+          "ci_lower": 0.02,
+          "ci_upper": 0.024
+        }
+      }
+    },
+    "expiry_window": {
+      "current_good_min": 7.0,
+      "current_good_max": 45.0,
+      "direction": "informational",
+      "reason": "DTE range 21-30d has the lowest win rate (2%). Review expiry_good_min / expiry_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 53008,
+      "bucket_summary": {
+        "3-7d": {
+          "n": 756,
+          "win_rate": 0.057,
+          "ci_lower": 0.045,
+          "ci_upper": 0.072
+        },
+        "7-14d": {
+          "n": 448,
+          "win_rate": 0.06,
+          "ci_lower": 0.044,
+          "ci_upper": 0.082
+        },
+        "14-21d": {
+          "n": 917,
+          "win_rate": 0.072,
+          "ci_lower": 0.059,
+          "ci_upper": 0.087
+        },
+        "21-30d": {
+          "n": 1580,
+          "win_rate": 0.017,
+          "ci_lower": 0.012,
+          "ci_upper": 0.023
+        },
+        "30-45d": {
+          "n": 427,
+          "win_rate": 0.023,
+          "ci_lower": 0.014,
+          "ci_upper": 0.039
+        },
+        ">45d": {
+          "n": 48880,
+          "win_rate": 0.02,
+          "ci_lower": 0.019,
+          "ci_upper": 0.022
+        }
+      }
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {},
+  "vix_regime_thresholds": null,
+  "notes": [
+    "DISCREPANCY: Score threshold \u2014 efficacy (5-day peak) suggests 'lower' but graded outcomes (actual hold) suggest 'raise'. base_score_threshold uses score_efficacy \u2014 whether options hit a profitable price within 5 days of being scored (short-term movement). base_score_threshold_graded uses signal_grades \u2014 whether options were profitable at the actual hold exit (AI-recommended hold period). When they conflict it typically means options are peaking before the recommended exit: efficacy sees the early gain, graded sees the fade. This is not a code or logic error \u2014 it is an economic signal that hold timing may be misaligned with price behaviour. Both signals are shown as LOW-priority so you can choose a path: lower the threshold (capture short-term movers) or raise it (filter for options that hold value through the recommended exit). Review hold_adjustment before acting on either threshold signal.",
+    "FN analysis corroborates score threshold suggestion (bucket 6.0 also shows high FN rate)."
+  ],
+  "source": "generated",
+  "staged_from_file": "calibration_generated.json"
+}

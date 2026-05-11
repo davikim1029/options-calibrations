@@ -1,0 +1,107 @@
+{
+  "status": "has_changes",
+  "baseline_source": "live",
+  "pi_config_synced_at": "2026-04-20T18:15:38.606425",
+  "generated_at": "2026-04-20T18:15:42.758244",
+  "strategy_version": "6d5938c5:f2eec90c",
+  "blended_versions": null,
+  "sample_size": 70889,
+  "graded_sample_size": 44800,
+  "efficacy_sample_size": 26089,
+  "fn_sample_size": 410639,
+  "confidence": "high",
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "delta_range": {
+      "current_min": 0.4,
+      "current_max": 0.65,
+      "suggested_min": 0.4,
+      "suggested_max": 0.65,
+      "delta_min": 0.0,
+      "delta_max": 0.0,
+      "direction": "informational",
+      "reason": "Delta bucket <0.25 has worst win rate (3%, n=4602). Review delta_good_min / delta_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 44800,
+      "bucket_summary": {
+        "<0.25": {
+          "n": 4602,
+          "win_rate": 0.026
+        },
+        "0.25-0.35": {
+          "n": 2408,
+          "win_rate": 0.068
+        },
+        "0.35-0.45": {
+          "n": 2817,
+          "win_rate": 0.099
+        },
+        "0.45-0.55": {
+          "n": 4057,
+          "win_rate": 0.133
+        },
+        "0.55-0.65": {
+          "n": 6499,
+          "win_rate": 0.127
+        },
+        "0.65-0.75": {
+          "n": 8843,
+          "win_rate": 0.119
+        },
+        ">0.75": {
+          "n": 15574,
+          "win_rate": 0.106
+        }
+      }
+    },
+    "expiry_window": {
+      "current_good_min": 7.0,
+      "current_good_max": 45.0,
+      "direction": "informational",
+      "reason": "DTE range 7-14d has the lowest win rate (3%). Review expiry_good_min / expiry_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 44800,
+      "bucket_summary": {
+        "3-7d": {
+          "n": 266,
+          "win_rate": 0.173
+        },
+        "7-14d": {
+          "n": 775,
+          "win_rate": 0.026
+        },
+        "14-21d": {
+          "n": 438,
+          "win_rate": 0.126
+        },
+        "21-30d": {
+          "n": 520,
+          "win_rate": 0.1
+        },
+        "30-45d": {
+          "n": 1295,
+          "win_rate": 0.151
+        },
+        ">45d": {
+          "n": 41506,
+          "win_rate": 0.103
+        }
+      }
+    },
+    "max_iv_fn": {
+      "current": 0.75,
+      "suggested": 0.85,
+      "delta": 0.1,
+      "direction": "raise",
+      "reason": "IV hard filter has 67% false-negative rate (11074/16509 rejected high-IV options were profitable). Consider relaxing max_iv slightly.",
+      "priority": "MEDIUM",
+      "sample_size": 16509
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {},
+  "notes": [
+    "Market regime (VIX): win rates similar across regimes \u2014 high (>25): 12% (n=15816), mid (15-25): 10% (n=28795). No material VIX regime effect detected.",
+    "Market regime (sector ETF 5d momentum): win rates similar \u2014 leading (>+2%): 10% (n=38105), neutral (\u00b12%): 14% (n=6434). No material sector momentum regime effect detected."
+  ]
+}

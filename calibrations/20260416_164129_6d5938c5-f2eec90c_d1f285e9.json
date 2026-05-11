@@ -1,0 +1,130 @@
+{
+  "status": "has_changes",
+  "baseline_source": "live",
+  "pi_config_synced_at": "2026-04-16T16:41:27.413073",
+  "generated_at": "2026-04-16T16:41:29.581746",
+  "strategy_version": "6d5938c5:f2eec90c",
+  "blended_versions": null,
+  "sample_size": 44390,
+  "graded_sample_size": 44091,
+  "efficacy_sample_size": 299,
+  "fn_sample_size": 37221,
+  "confidence": "high",
+  "scanner_config_path": "/home/dkim/GitHub/options/option-getter/cache/scanner_config.json",
+  "adjustments": {
+    "max_iv": {
+      "current": 0.65,
+      "suggested": 0.65,
+      "delta": 0.0,
+      "direction": "informational",
+      "reason": "Logic flaw detected in IV scoring \u2014 see logic_flaw_warnings.",
+      "priority": "HIGH",
+      "sample_size": 0,
+      "logic_flaw_warnings": [
+        "IV 0.30-0.50: rejected options win 26% vs 0% for passed options (n_pass=9, n_fail=23276) \u2014 scoring may be inverting signal at this level."
+      ]
+    },
+    "delta_range": {
+      "current_min": 0.4,
+      "current_max": 0.65,
+      "suggested_min": 0.4,
+      "suggested_max": 0.65,
+      "delta_min": 0.0,
+      "delta_max": 0.0,
+      "direction": "informational",
+      "reason": "Delta bucket >0.75 has worst win rate (14%, n=15204). Review delta_good_min / delta_good_max in config.",
+      "priority": "MEDIUM",
+      "sample_size": 44091,
+      "bucket_summary": {
+        "<0.25": {
+          "n": 4595,
+          "win_rate": 0.228
+        },
+        "0.25-0.35": {
+          "n": 2390,
+          "win_rate": 0.218
+        },
+        "0.35-0.45": {
+          "n": 2775,
+          "win_rate": 0.254
+        },
+        "0.45-0.55": {
+          "n": 3978,
+          "win_rate": 0.272
+        },
+        "0.55-0.65": {
+          "n": 6391,
+          "win_rate": 0.211
+        },
+        "0.65-0.75": {
+          "n": 8758,
+          "win_rate": 0.183
+        },
+        ">0.75": {
+          "n": 15204,
+          "win_rate": 0.137
+        }
+      }
+    },
+    "expiry_window": {
+      "current_good_min": 7.0,
+      "current_good_max": 45.0,
+      "direction": "informational",
+      "reason": "DTE range >45d has the lowest win rate (18%). Review expiry_good_min / expiry_good_max in config.",
+      "priority": "HIGH",
+      "sample_size": 44091,
+      "bucket_summary": {
+        "3-7d": {
+          "n": 266,
+          "win_rate": 0.192
+        },
+        "7-14d": {
+          "n": 687,
+          "win_rate": 0.459
+        },
+        "14-21d": {
+          "n": 429,
+          "win_rate": 0.329
+        },
+        "21-30d": {
+          "n": 510,
+          "win_rate": 0.314
+        },
+        "30-45d": {
+          "n": 1256,
+          "win_rate": 0.423
+        },
+        ">45d": {
+          "n": 40943,
+          "win_rate": 0.176
+        }
+      },
+      "logic_flaw_warnings": [
+        "DTE 7-14d: rejected options win 46% vs 0% for passed options (n_pass=5, n_fail=682) \u2014 scoring may be inverting signal at this level.",
+        "DTE 30-45d: rejected options win 42% vs 0% for passed options (n_pass=5, n_fail=1251) \u2014 scoring may be inverting signal at this level."
+      ]
+    }
+  },
+  "hold_adjustment": null,
+  "factor_weight_adjustments": {
+    "strike": {
+      "config_key": "fw_strike",
+      "current": 0.35,
+      "suggested": 0.25,
+      "delta": -0.1,
+      "direction": "lower",
+      "avg_win_contribution": 3.128,
+      "avg_loss_contribution": 3.14,
+      "sample_size": 299,
+      "source": "efficacy",
+      "reason": "Strike contributes avg 3.13 on profitable trades vs 3.14 on losses (diff=-0.01, source=efficacy) \u2014 weak predictor. Lowering weight 0.35 \u2192 0.25 to reduce noise.",
+      "priority": "LOW",
+      "discrepancy_note": "Efficacy (5-day) suggests 'lower' but actual hold outcomes suggest 'raise'. This typically means the factor is predictive short-term but the hold window is misaligned \u2014 check hold_adjustment before changing this factor weight."
+    }
+  },
+  "notes": [
+    "Factor weight analysis found 1 factor(s) with suggested weight changes.",
+    "Market regime (VIX): win rates similar across regimes \u2014 high (>25): 27% (n=15518), mid (15-25): 15% (n=28426). No material VIX regime effect detected.",
+    "Market regime (sector ETF 5d momentum): win rates similar \u2014 leading (>+2%): 18% (n=37658), neutral (\u00b12%): 26% (n=6218). No material sector momentum regime effect detected."
+  ]
+}
